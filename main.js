@@ -38,6 +38,8 @@ function getRandomInt(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+const width = Math.round(770 / 20) * 5;
+const height = Math.round(169 / 20) * 5;
 
 let playerX = 370;
 let playerY = 100;
@@ -75,8 +77,6 @@ lowerPipes.push({
 
 canvas.on("draw", () => {
   if (gameOver) {
-    const width = Math.round(770 / 20) * 5;
-    const height = Math.round(169 / 20) * 5;
     canvas.renderFont(font, "Game Over!", {
       blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
     }, {
@@ -88,7 +88,7 @@ canvas.on("draw", () => {
     canvas.present();
     return;
   }
-  canvas.setDrawColor(0, 0, 0, 255);
+  canvas.setDrawColor(19, 14, 14, 255);
   canvas.clear();
   canvas.setDrawColor(87, 7, 90, 255);
   canvas.fillRect(playerX, playerY, 50, 50);
@@ -135,9 +135,11 @@ canvas.on("draw", () => {
       score_value += 1;
     }
 
+
     // Debug:
     // canvas.fillRect(playerX + 50 / 2, playerY, 0, 50)
     // canvas.fillRect(upperPipes[idx].x + PIPE_WIDTH / 2, upperPipes[idx].height, 0, 800 - upperPipes[idx].height - lowerPipes[idx].height);
+
 
     canvas.fillRect(
       upperPipes[idx].x,
@@ -160,6 +162,14 @@ canvas.on("draw", () => {
       lowerPipes[idx].height = 800 - upperPipes[idx].height - GAP;
     }
   }
+  canvas.renderFont(font, "Score: " + score_value, {
+      blended: { color: { r: 127, g: 201, b: 201, a: 255 } },
+    }, {
+      x: Math.floor(x_font) + 550,
+      y: Math.floor(y_font) + 10,
+      width,
+      height,
+    });  
   if (is_space) {
     playerY -= 2;
     setTimeout(() => is_space = false, 84);
