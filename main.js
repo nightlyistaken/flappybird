@@ -1,4 +1,4 @@
-import { Canvas } from "https://deno.land/x/sdl2/src/canvas.ts";
+import { Canvas } from "https://deno.land/x/sdl2@0.1-alpha.5/src/canvas.ts";
 
 const canvas = new Canvas({
   title: "deno_flappy_bird 🐦",
@@ -59,6 +59,7 @@ const GAP = 180;
 
 let x_font = 0, y_font = 0;
 let gameOver = false;
+let intro = true;
 upperPipes.push({ x: 800 + PIPE_WIDTH, height: getRandomInt(100, 200) });
 upperPipes.push({
   x: 800 + (PIPE_WIDTH * 2) + PIPE_DISTANCE,
@@ -75,7 +76,52 @@ lowerPipes.push({
   height: 800 - upperPipes[1].height - GAP,
 });
 
+const birdSurfaceMidflap = canvas.loadSurface("images/yellowbird-midflap.png");
+const birdTextureMidflap = canvas.createTextureFromSurface(birdSurfaceMidflap);
+
+const birdSurfaceUpflap = canvas.loadSurface("images/yellowbird-upflap.png");
+const birdTextureUpflap = canvas.createTextureFromSurface(birdSurfaceUpflap);
+
+const birdSurfaceDownflap = canvas.loadSurface("images/yellowbird-downflap.png");
+const birdTextureDownflap = canvas.createTextureFromSurface(birdSurfaceDownflap);
+
+const startScreenSurface = canvas.loadSurface("images/start.png");
+const startScreenTexture = canvas.createTextureFromSurface(startScreenSurface);
+
+const birdTextures = [birdTextureUpflap, birdTextureMidflap, birdTextureDownflap];
+let animationCycle = 0; // 0, 1, 2
+
+
+
 canvas.on("draw", () => {
+  if (intro) {
+    canvas.clear()
+     canvas.copy(startScreenTexture, { x: 0, y: 0, width: 800, height: 600 }, {
+    x: 0,
+    y: 0,
+    width: 800,
+    height: 600,
+    });
+    canvas.renderFont(font, "Press Space", {
+      blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
+      }, {
+      x: Math.floor(x_font) + 300,
+      y: Math.floor(y_font) + 470,
+      width,
+      height,
+    });
+      canvas.renderFont(font, "  to start ", {
+      blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
+      }, {
+      x: Math.floor(x_font) + 290,
+      y: Math.floor(y_font) + 520,
+      width,
+      height,
+    });
+
+    canvas.present();
+    return;
+  }
   if (gameOver) {
     canvas.renderFont(font, "Game Over!", {
       blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
@@ -88,18 +134,29 @@ canvas.on("draw", () => {
     canvas.present();
     return;
   }
-  canvas.setDrawColor(19, 14, 14, 255);
+canvas.setDrawColor(255, 255, 90, 255);
+ 
   canvas.clear();
-  canvas.setDrawColor(87, 7, 90, 255);
-  canvas.fillRect(playerX, playerY, 50, 50);
+ 
+  // canvas.fillRect(playerX, playerY, 50, 50);
+  animationCycle += 1;
+  if(animationCycle >= 3) {
+    animationCycle = 0;
+  }
+  canvas.copy(birdTextures[animationCycle], { x: 0, y: 0, width: 34, height: 24 }, {
+    x: playerX,
+    y: playerY,
+    width: 34,
+    height: 24,
+  }); 
   canvas.setDrawColor(181, 14, 26, 255);
   for (let idx = 0; idx < upperPipes.length; idx++) {
     if (
       checkCollision(
         playerX,
         playerY,
-        50,
-        50,
+        34,
+        24,
         upperPipes[idx].x,
         UPPER_PIPE_Y,
         PIPE_WIDTH,
@@ -108,8 +165,8 @@ canvas.on("draw", () => {
       checkCollision(
         playerX,
         playerY,
-        50,
-        50,
+        34,
+        24,
         lowerPipes[idx].x,
         LOWER_PIPE_Y_BASE - lowerPipes[idx].height,
         PIPE_WIDTH,
@@ -118,6 +175,9 @@ canvas.on("draw", () => {
     ) {
       // TODO: Hit (complete)
       gameOver = true;
+      let score_effects = ["game_over.wav", "game_over_2.wav"]
+      canvas.playMusic("./audio/" + score_effects[Math.floor(Math.random() * 2)]);
+    
     }
     if (
       checkCollision(
@@ -133,6 +193,9 @@ canvas.on("draw", () => {
     ) {
       // Make Score + 1 when pipe crossed
       score_value += 1;
+      let score_effects = ["scored_1.wav", "scored_2.wav"]
+      canvas.playMusic("./audio/" + score_effects[Math.floor(Math.random() * 2)]);
+
     }
 
 
@@ -166,7 +229,7 @@ canvas.on("draw", () => {
       blended: { color: { r: 127, g: 201, b: 201, a: 255 } },
     }, {
       x: Math.floor(x_font) + 550,
-      y: Math.floor(y_font) + 10,
+      y: Math.floor(y_font) + 550,
       width,
       height,
     });  
@@ -189,12 +252,9 @@ canvas.on("event", (e) => {
     canvas.quit();
   }
   if (e.type == "key_down") {
-    // Left arrow
-    if (e.keycode == 1073741903) {
-      playerX += 10;
-    }
     // Space
     if (e.keycode == 32) {
+      intro = false;
       is_space = true;
     }
   }
