@@ -11,7 +11,7 @@ const canvas = new Canvas({
   minimized: false,
   maximized: false,
 });
-canvas.setCursor("images/yellowbird-upflap.png");
+canvas.setCursor("images/cursor.png");
 
 const gravity = 1;
 const fps = 9
@@ -59,6 +59,7 @@ const GAP = 165;
 let x_font = 0, y_font = 0;
 let gameOver = false;
 let intro = true;
+let retry = false;
 
 upperPipes.push({ x: 400 + PIPE_WIDTH, height: getRandomInt(100, 200) });
 upperPipes.push({
@@ -278,6 +279,10 @@ canvas.on("event", (e) => {
       intro = false;
       is_space = true;
     }
+    if (e.keycode == 114 && gameOver) {
+      intro = true;
+      gameOver = false;
+    }
   }
 });
 
@@ -311,6 +316,8 @@ canvas.renderFont(font, "Press Space to start", {
   width,
   height,
 });
+
+
 
 canvas.present();
 
