@@ -143,43 +143,15 @@ canvas.on("draw", () => {
     canvas.present();
     return;
   }
-  if (gameOver) {
-    canvas.renderFont(font, "Game Over!", {
-      blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
-    }, {
-      x: Math.floor(x_font) + 64,
-      y: Math.floor(y_font) + 64,
-      width,
-      height,
-    });
-    canvas.present();
-    return;
-  }
   canvas.setDrawColor(255, 255, 90, 255);
 
-  canvas.clear();
   canvas.copy(BgScreenTexture, { x: 0, y: 0, width: 800, height: 600 }, {
     x: 0,
     y: 0,
     width: 800,
     height: 600,
   });
-  // canvas.fillRect(playerX, playerY, 50, 50);
-  animationCycle += 1;
-  if (animationCycle >= 3) {
-    animationCycle = 0;
-  }
-  canvas.copy(birdTextures[animationCycle], {
-    x: 0,
-    y: 0,
-    width: 34,
-    height: 24,
-  }, {
-    x: playerX,
-    y: playerY,
-    width: 34,
-    height: 24,
-  });
+
   canvas.setDrawColor(181, 14, 26, 255);
   for (let idx = 0; idx < upperPipes.length; idx++) {
     if (
@@ -204,12 +176,22 @@ canvas.on("draw", () => {
         lowerPipes[idx].height,
       )
     ) {
-      // TODO: Hit (complete)
-      gameOver = true;
-      let score_effects = ["game_over.wav", "game_over_2.wav"];
-      canvas.playMusic(
-        "./audio/" + score_effects[Math.floor(Math.random() * 2)],
-      );
+      // Only runs once
+      if (!gameOver) {
+        gameOver = true;
+        canvas.playMusic(
+          "./audio/game_over.wav",
+        );
+        canvas.renderFont(font, "Game Over!", {
+          blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
+        }, {
+          x: Math.floor(x_font) + 64,
+          y: Math.floor(y_font) + 64,
+          width,
+          height,
+        });
+        canvas.present();
+      }
     }
     if (
       checkCollision(
@@ -223,7 +205,6 @@ canvas.on("draw", () => {
         800 - upperPipes[idx].height - lowerPipes[idx].height,
       )
     ) {
-      // Make Score + 1 when pipe crossed
       score_value += 1;
       let score_effects = ["scored_1.wav", "scored_2.wav"];
       canvas.playMusic(
@@ -234,7 +215,7 @@ canvas.on("draw", () => {
     // Debug:
     // canvas.fillRect(playerX + 50 / 2, playerY, 0, 50)
     // canvas.fillRect(upperPipes[idx].x + PIPE_WIDTH / 2, upperPipes[idx].height, 0, 800 - upperPipes[idx].height - lowerPipes[idx].height);
-    
+
     // Pipes
     canvas.copy(pipeTextureDown, { x: 0, y: 0, width: 52, height: 320 }, {
       x: upperPipes[idx].x,
@@ -248,33 +229,59 @@ canvas.on("draw", () => {
       width: PIPE_WIDTH,
       height: lowerPipes[idx].height,
     });
+    canvas.copy(birdTextures[animationCycle], {
+      x: 0,
+      y: 0,
+      width: 34,
+      height: 24,
+    }, {
+      x: playerX,
+      y: playerY,
+      width: 34,
+      height: 24,
+    });
+    if (!gameOver) {
+      // Wing animation
+      animationCycle += 1;
+      if (animationCycle >= 3) {
+        animationCycle = 0;
+      }
 
-    upperPipes[idx].x -= 1;
-    lowerPipes[idx].x -= 1;
-    if (upperPipes[idx].x <= -PIPE_WIDTH) {
-      upperPipes[idx].x = 800 + PIPE_WIDTH;
-      upperPipes[idx].height = getRandomInt(100, 200);
-      lowerPipes[idx].x = 800 + PIPE_WIDTH;
-      lowerPipes[idx].height = 800 - upperPipes[idx].height - GAP;
+      upperPipes[idx].x -= 1;
+      lowerPipes[idx].x -= 1;
+      if (upperPipes[idx].x <= -PIPE_WIDTH) {
+        upperPipes[idx].x = 800 + PIPE_WIDTH;
+        upperPipes[idx].height = getRandomInt(100, 200);
+        lowerPipes[idx].x = 800 + PIPE_WIDTH;
+        lowerPipes[idx].height = 800 - upperPipes[idx].height - GAP;
+      }
+
+      if (playerY >= 600 - 50) {
+        gameOver = true;
+
+        canvas.playMusic(
+          "./audio/game_over.wav",
+        );
+      }
     }
-  }
-  canvas.renderFont(font, "Score: " + score_value, {
-    blended: { color: { r: 127, g: 201, b: 201, a: 255 } },
-  }, {
-    x: Math.floor(x_font) + 550,
-    y: Math.floor(y_font) + 550,
-    width,
-    height,
-  });
-  if (is_space) {
-    playerY -= 2;
-    setTimeout(() => is_space = false, 84);
-  } else {
-    // Give player gravity downwards
-    playerY += gravity;
-  }
-  if (playerY >= 600 - 50) {
-        gameOver = true
+    canvas.renderFont(font, "Score: " + score_value, {
+      blended: { color: { r: 127, g: 201, b: 201, a: 255 } },
+    }, {
+      x: Math.floor(x_font) + 550,
+      y: Math.floor(y_font) + 550,
+      width,
+      height,
+    });
+    if (is_space) {
+      playerY -= 2;
+      setTimeout(() => is_space = false, 84);
+    } else {
+      // Give player gravity downwards
+      playerY += gravity;
+    }
+    if (playerY >= 600 - 50) {
+      playerY = 600 - 50;
+    }
   }
 
   canvas.present();
@@ -286,7 +293,7 @@ canvas.on("event", (e) => {
   }
   if (e.type == "key_down") {
     // Space
-    if (e.keycode == 32) {
+    if (e.keycode == 32 && !gameOver) {
       intro = false;
       is_space = true;
     }
