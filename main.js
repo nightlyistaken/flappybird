@@ -11,6 +11,72 @@ const canvas = new Canvas({
   minimized: false,
   maximized: false,
 });
+
+class Entity {
+  constructor(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
+}
+
+const birdSurfaceGameOver = canvas.loadSurface("images/yellowbird-gameover.png");
+const birdTextureGameOver = canvas.createTextureFromSurface(birdSurfaceGameOver);
+
+class Player extends Entity {
+  dead = false;
+  constructor() {
+    super(170, 100, 34, 24);
+
+    const birdSurfaceMidflap = canvas.loadSurface("images/yellowbird-midflap.png");
+    const birdTextureMidflap = canvas.createTextureFromSurface(birdSurfaceMidflap);
+    
+    const birdSurfaceUpflap = canvas.loadSurface("images/yellowbird-upflap.png");
+    const birdTextureUpflap = canvas.createTextureFromSurface(birdSurfaceUpflap);
+
+    const birdSurfaceDownflap = canvas.loadSurface(
+      "images/yellowbird-downflap.png",
+    );
+    const birdTextureDownflap = canvas.createTextureFromSurface(
+      birdSurfaceDownflap,
+    );
+
+    this.textures = [
+      birdTextureUpflap,
+      birdTextureMidflap,
+      birdTextureDownflap,
+    ];
+
+    this.animationCycle = 0;
+  }
+
+  render() {
+    const texture = this.dead ? birdTextureGameOver : this.textures[this.animationCycle];
+    canvas.copy(texture, {
+      x: 0,
+      y: 0,
+      width: this.dead ? 34 : this.width,
+      height: this.dead ? 41 : this.height,
+    }, {
+      x: this.x,
+      y: this.y,
+      width: this.dead ? 34 : this.width,
+      height: this.dead ? 41 : this.height,
+    });
+
+    // Wing animation
+    this.animationCycle += 1;
+    if (this.animationCycle >= 3) {
+      this.animationCycle = 0;
+    }
+  }
+
+  die() {
+    this.dead = true;
+  }
+}
+
 canvas.setCursor("images/cursor.png");
 
 const gravity = 1;
@@ -40,8 +106,6 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-let playerX = 170;
-let playerY = 100;
 let is_space = false;
 
 // Score value
@@ -53,45 +117,25 @@ const lowerPipes = [];
 const UPPER_PIPE_Y = 0;
 const LOWER_PIPE_Y_BASE = 800;
 const PIPE_WIDTH = 52;
-const PIPE_DISTANCE = 320;
-const GAP = 165;
+const PIPE_DISTANCE = 100;
+const GAP = 130;
 
 let x_font = 0, y_font = 0;
 let gameOver = false;
 let intro = true;
 let retry = false;
 
-upperPipes.push({ x: 400 + PIPE_WIDTH, height: getRandomInt(100, 200) });
-upperPipes.push({
-  x: 400 + (PIPE_WIDTH * 2) + PIPE_DISTANCE,
-  height: getRandomInt(100, 200),
-});
-
-// Screen width - Corresponding upper pipe height - Random Gap
-lowerPipes.push({
-  x: 400 + PIPE_WIDTH,
-  height: 800 - upperPipes[0].height - GAP,
-});
-lowerPipes.push({
-  x: 400 + (PIPE_WIDTH * 2) + PIPE_DISTANCE,
-  height: 800 - upperPipes[1].height - GAP,
-});
-
-const birdSurfaceMidflap = canvas.loadSurface("images/yellowbird-midflap.png");
-const birdTextureMidflap = canvas.createTextureFromSurface(birdSurfaceMidflap);
-
-const birdSurfaceUpflap = canvas.loadSurface("images/yellowbird-upflap.png");
-const birdTextureUpflap = canvas.createTextureFromSurface(birdSurfaceUpflap);
-
-const birdSurfaceDownflap = canvas.loadSurface(
-  "images/yellowbird-downflap.png",
-);
-const birdTextureDownflap = canvas.createTextureFromSurface(
-  birdSurfaceDownflap,
-);
-
-const birdSurfaceGameOver = canvas.loadSurface("images/yellowbird-gameover.png");
-const birdTextureGameOver = canvas.createTextureFromSurface(birdSurfaceGameOver);
+for(let i = 1; i < 6; i++) {
+  const height = getRandomInt(100, 300);
+  const distance = (i == 1) ? 0 : PIPE_DISTANCE;
+  upperPipes.push({ x: 400 + (PIPE_WIDTH * i) + (distance * i), height });
+  
+  // Screen width - Corresponding upper pipe height - Random Gap
+  lowerPipes.push({
+    x: 400 + (PIPE_WIDTH * i) + (distance * i),
+    height: 800 - height - GAP,
+  });
+}
 
 const BgScreenSurface = canvas.loadSurface("images/background.png");
 const BgScreenTexture = canvas.createTextureFromSurface(BgScreenSurface);
@@ -102,23 +146,12 @@ const pipeTextureUp = canvas.createTextureFromSurface(pipeSurfaceUp);
 const pipeSurfaceDown = canvas.loadSurface("images/pipe-down.png");
 const pipeTextureDown = canvas.createTextureFromSurface(pipeSurfaceDown);
 
-const birdTextures = [
-  birdTextureUpflap,
-  birdTextureMidflap,
-  birdTextureDownflap,
-];
-let animationCycle = 0; // 0, 1, 2
-
-let prevTime = performance.now();
+const bird = new Player();
 
 canvas.on("draw", () => {
   if (intro) {
     return;
   }
-
-  const currTime = performance.now();
-  const deltaTime = currTime - prevTime;
-  prevTime = currTime;
 
   canvas.copy(BgScreenTexture, { x: 0, y: 0, width: 400, height: 800 }, {
     x: 0,
@@ -130,8 +163,8 @@ canvas.on("draw", () => {
   for (let idx = 0; idx < upperPipes.length; idx++) {
     if (
       checkCollision(
-        playerX,
-        playerY,
+        bird.x,
+        bird.y,
         34,
         24,
         upperPipes[idx].x,
@@ -140,8 +173,8 @@ canvas.on("draw", () => {
         upperPipes[idx].height,
       ) ||
       checkCollision(
-        playerX,
-        playerY,
+        bird.x,
+        bird.y,
         34,
         24,
         lowerPipes[idx].x,
@@ -161,8 +194,8 @@ canvas.on("draw", () => {
     }
     if (
       checkCollision(
-        playerX + 50 / 2,
-        playerY,
+        bird.x + 50 / 2,
+        bird.y,
         0,
         50,
         upperPipes[idx].x + PIPE_WIDTH / 2,
@@ -196,22 +229,7 @@ canvas.on("draw", () => {
       height: lowerPipes[idx].height,
     });
     if (!gameOver) {
-      canvas.copy(birdTextures[animationCycle], {
-        x: 0,
-        y: 0,
-        width: 34,
-        height: 24,
-      }, {
-        x: playerX,
-        y: playerY,
-        width: 34,
-        height: 24,
-      });
-      // Wing animation
-      animationCycle += 1;
-      if (animationCycle >= 3) {
-        animationCycle = 0;
-      }
+      bird.render();
 
       upperPipes[idx].x -= 1;
       lowerPipes[idx].x -= 1;
@@ -222,7 +240,7 @@ canvas.on("draw", () => {
         lowerPipes[idx].height = 800 - upperPipes[idx].height - GAP;
       }
 
-      if (playerY >= 800 - 50) {
+      if (bird.y >= 800 - 50) {
         gameOver = true;
 
         canvas.playMusic(
@@ -230,36 +248,29 @@ canvas.on("draw", () => {
         );
       }
     } else {
-      canvas.copy(birdTextureGameOver, {
-        x: 0,
-        y: 0,
-        width: 34,
-        height: 41,
-      }, {
-        x: playerX,
-        y: playerY,
-        width: 34,
-        height: 41,
-      });
-    }
-    canvas.renderFont(font, score_value.toString(), {
-      blended: { color: { r: 255, g: 255, b: 255, a: 255 } },
-    }, {
-      x: 10,
-      y: -20,
-    });
-    if (is_space) {
-      playerY -= 50;
-      is_space = false;
-    } else {
-      // Give player gravity downwards
-      playerY += gravity;
-    }
-    if (playerY >= 800 - 50) {
-      playerY = 800 - 50;
+      bird.die();
+      bird.render();
     }
   }
+    
+  canvas.renderFont(font, score_value.toString(), {
+    blended: { color: { r: 255, g: 255, b: 255, a: 255 } },
+  }, {
+    x: 10,
+    y: -20,
+  });
 
+  // Game physics
+  if (is_space) {
+    bird.y -= 50;
+    is_space = false;
+  } else {
+    // Give player downwards acceleration
+    bird.y += gravity;
+  }
+  if (bird.y >= 800 - 50) {
+    bird.y = 800 - 50;
+  }
   canvas.present();
   Deno.sleepSync(fps);
 });
