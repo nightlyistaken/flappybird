@@ -1,9 +1,9 @@
 import { Canvas } from "https://deno.land/x/sdl2@0.1-alpha.5/src/canvas.ts";
 
 const canvas = new Canvas({
-  title: "deno_flappy_bird 🐦",
-  height: 800,
-  width: 600,
+  title: "Flappy Bird in Deno 🐦",
+  height: 400,
+  width: 800,
   centered: true,
   fullscreen: false,
   hidden: false,
@@ -38,10 +38,8 @@ function getRandomInt(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-const width = Math.round(770 / 20) * 5;
-const height = Math.round(169 / 20) * 5;
 
-let playerX = 370;
+let playerX = 170;
 let playerY = 100;
 let is_space = false;
 
@@ -61,19 +59,19 @@ let x_font = 0, y_font = 0;
 let gameOver = false;
 let intro = true;
 
-upperPipes.push({ x: 800 + PIPE_WIDTH, height: getRandomInt(100, 200) });
+upperPipes.push({ x: 400 + PIPE_WIDTH, height: getRandomInt(100, 200) });
 upperPipes.push({
-  x: 800 + (PIPE_WIDTH * 2) + PIPE_DISTANCE,
+  x: 400 + (PIPE_WIDTH * 2) + PIPE_DISTANCE,
   height: getRandomInt(100, 200),
 });
 
 // Screen width - Corresponding upper pipe height - Random Gap
 lowerPipes.push({
-  x: 800 + PIPE_WIDTH,
+  x: 400 + PIPE_WIDTH,
   height: 800 - upperPipes[0].height - GAP,
 });
 lowerPipes.push({
-  x: 800 + (PIPE_WIDTH * 2) + PIPE_DISTANCE,
+  x: 400 + (PIPE_WIDTH * 2) + PIPE_DISTANCE,
   height: 800 - upperPipes[1].height - GAP,
 });
 
@@ -89,9 +87,6 @@ const birdSurfaceDownflap = canvas.loadSurface(
 const birdTextureDownflap = canvas.createTextureFromSurface(
   birdSurfaceDownflap,
 );
-
-const startScreenSurface = canvas.loadSurface("images/start.png");
-const startScreenTexture = canvas.createTextureFromSurface(startScreenSurface);
 
 const BgScreenSurface = canvas.loadSurface("images/background.png");
 const BgScreenTexture = canvas.createTextureFromSurface(BgScreenSurface);
@@ -112,47 +107,21 @@ let animationCycle = 0; // 0, 1, 2
 let prevTime = performance.now();
 
 canvas.on("draw", () => {
+  if (intro) {
+    return;
+  }
+
   const currTime = performance.now();
   const deltaTime = currTime - prevTime;
   prevTime = currTime;
-  if (intro) {
-    canvas.clear();
-    canvas.copy(startScreenTexture, { x: 0, y: 0, width: 800, height: 600 }, {
-      x: 0,
-      y: 0,
-      width: 800,
-      height: 600,
-    });
-    canvas.renderFont(font, "Press Space", {
-      blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
-    }, {
-      x: Math.floor(x_font) + 300,
-      y: Math.floor(y_font) + 470,
-      width,
-      height,
-    });
-    canvas.renderFont(font, "  to start ", {
-      blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
-    }, {
-      x: Math.floor(x_font) + 290,
-      y: Math.floor(y_font) + 520,
-      width,
-      height,
-    });
 
-    canvas.present();
-    return;
-  }
-  canvas.setDrawColor(255, 255, 90, 255);
-
-  canvas.copy(BgScreenTexture, { x: 0, y: 0, width: 800, height: 600 }, {
+  canvas.copy(BgScreenTexture, { x: 0, y: 0, width: 400, height: 800 }, {
     x: 0,
     y: 0,
-    width: 800,
-    height: 600,
+    width: 400,
+    height: 800,
   });
 
-  canvas.setDrawColor(181, 14, 26, 255);
   for (let idx = 0; idx < upperPipes.length; idx++) {
     if (
       checkCollision(
@@ -182,14 +151,6 @@ canvas.on("draw", () => {
         canvas.playMusic(
           "./audio/game_over.wav",
         );
-        canvas.renderFont(font, "Game Over!", {
-          blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
-        }, {
-          x: Math.floor(x_font) + 64,
-          y: Math.floor(y_font) + 64,
-          width,
-          height,
-        });
         canvas.present();
       }
     }
@@ -256,7 +217,7 @@ canvas.on("draw", () => {
         lowerPipes[idx].height = 800 - upperPipes[idx].height - GAP;
       }
 
-      if (playerY >= 600 - 50) {
+      if (playerY >= 800 - 50) {
         gameOver = true;
 
         canvas.playMusic(
@@ -264,27 +225,26 @@ canvas.on("draw", () => {
         );
       }
     }
-    canvas.renderFont(font, "Score: " + score_value, {
-      blended: { color: { r: 127, g: 201, b: 201, a: 255 } },
+    canvas.renderFont(font, score_value.toString(), {
+      blended: { color: { r: 255, g: 255, b: 255, a: 255 } },
     }, {
-      x: Math.floor(x_font) + 550,
-      y: Math.floor(y_font) + 550,
-      width,
-      height,
+      x: 10,
+      y: -20,
     });
     if (is_space) {
-      playerY -= 2;
-      setTimeout(() => is_space = false, 84);
+      playerY -= 50;
+      is_space = false;
     } else {
       // Give player gravity downwards
       playerY += gravity;
     }
-    if (playerY >= 600 - 50) {
-      playerY = 600 - 50;
+    if (playerY >= 800 - 50) {
+      playerY = 800 - 50;
     }
   }
 
   canvas.present();
+  Deno.sleepSync(10);
 });
 
 canvas.on("event", (e) => {
@@ -299,5 +259,38 @@ canvas.on("event", (e) => {
     }
   }
 });
+
+canvas.clear();
+
+canvas.copy(BgScreenTexture, { x: 0, y: 0, width: 400, height: 800 }, {
+  x: 0,
+  y: 0,
+  width: 400,
+  height: 800,
+});
+
+const height = Math.floor(170 / 3) - 25;
+
+canvas.renderFont(font, "flappybird!", {
+  blended: { color: { r: 255, g: 255, b: 255, a: 255 } },
+}, {
+  x: (400 / 2) - 130,
+  y: (800 / 2) - (2 * height),
+  width: Math.floor(770 / 5),
+  height,
+});
+
+const width = Math.floor(770 / 3);
+
+canvas.renderFont(font, "Press Space to start", {
+  blended: { color: { r: 255, g: 255, b: 255, a: 255 } },
+}, {
+  x: (400 / 2) - 130,
+  y: (800 / 2) - height,
+  width,
+  height,
+});
+
+canvas.present();
 
 await canvas.start();
