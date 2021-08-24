@@ -11,6 +11,7 @@ const canvas = new Canvas({
   minimized: false,
   maximized: false,
 });
+canvas.setCursor("images/yellowbird-upflap.png");
 
 const gravity = 1;
 
@@ -87,6 +88,9 @@ const birdSurfaceDownflap = canvas.loadSurface(
 const birdTextureDownflap = canvas.createTextureFromSurface(
   birdSurfaceDownflap,
 );
+
+const birdSurfaceGameOver = canvas.loadSurface("images/yellowbird-gameover.png");
+const birdTextureGameOver = canvas.createTextureFromSurface(birdSurfaceGameOver);
 
 const BgScreenSurface = canvas.loadSurface("images/background.png");
 const BgScreenTexture = canvas.createTextureFromSurface(BgScreenSurface);
@@ -190,18 +194,18 @@ canvas.on("draw", () => {
       width: PIPE_WIDTH,
       height: lowerPipes[idx].height,
     });
-    canvas.copy(birdTextures[animationCycle], {
-      x: 0,
-      y: 0,
-      width: 34,
-      height: 24,
-    }, {
-      x: playerX,
-      y: playerY,
-      width: 34,
-      height: 24,
-    });
     if (!gameOver) {
+      canvas.copy(birdTextures[animationCycle], {
+        x: 0,
+        y: 0,
+        width: 34,
+        height: 24,
+      }, {
+        x: playerX,
+        y: playerY,
+        width: 34,
+        height: 24,
+      });
       // Wing animation
       animationCycle += 1;
       if (animationCycle >= 3) {
@@ -224,6 +228,18 @@ canvas.on("draw", () => {
           "./audio/game_over.wav",
         );
       }
+    } else {
+      canvas.copy(birdTextureGameOver, {
+        x: 0,
+        y: 0,
+        width: 34,
+        height: 41,
+      }, {
+        x: playerX,
+        y: playerY,
+        width: 34,
+        height: 41,
+      });
     }
     canvas.renderFont(font, score_value.toString(), {
       blended: { color: { r: 255, g: 255, b: 255, a: 255 } },
@@ -250,6 +266,11 @@ canvas.on("draw", () => {
 canvas.on("event", (e) => {
   if (e.type == "quit") {
     canvas.quit();
+  }
+  if (e.type == "mouse_button_down" && e.button == 1 && !gameOver) {
+    // Left click
+    intro = false;
+    is_space = true;
   }
   if (e.type == "key_down") {
     // Space
