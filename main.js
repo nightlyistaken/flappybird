@@ -7,7 +7,7 @@ const canvas = new Canvas({
   centered: true,
   fullscreen: false,
   hidden: false,
-  resizable: true,
+  resizable: false,
   minimized: false,
   maximized: false,
 });
@@ -28,7 +28,7 @@ function checkCollision(
 }
 
 const font = canvas.loadFont(
-  "font.ttf",
+  "./fonts/mainfont.ttf",
   128,
   { style: "normal" },
 );
@@ -53,13 +53,14 @@ const lowerPipes = [];
 
 const UPPER_PIPE_Y = 0;
 const LOWER_PIPE_Y_BASE = 800;
-const PIPE_WIDTH = 100;
-const PIPE_DISTANCE = 250;
+const PIPE_WIDTH = 52;
+const PIPE_DISTANCE = 320;
 const GAP = 180;
 
 let x_font = 0, y_font = 0;
 let gameOver = false;
 let intro = true;
+
 upperPipes.push({ x: 800 + PIPE_WIDTH, height: getRandomInt(100, 200) });
 upperPipes.push({
   x: 800 + (PIPE_WIDTH * 2) + PIPE_DISTANCE,
@@ -82,37 +83,57 @@ const birdTextureMidflap = canvas.createTextureFromSurface(birdSurfaceMidflap);
 const birdSurfaceUpflap = canvas.loadSurface("images/yellowbird-upflap.png");
 const birdTextureUpflap = canvas.createTextureFromSurface(birdSurfaceUpflap);
 
-const birdSurfaceDownflap = canvas.loadSurface("images/yellowbird-downflap.png");
-const birdTextureDownflap = canvas.createTextureFromSurface(birdSurfaceDownflap);
+const birdSurfaceDownflap = canvas.loadSurface(
+  "images/yellowbird-downflap.png",
+);
+const birdTextureDownflap = canvas.createTextureFromSurface(
+  birdSurfaceDownflap,
+);
 
 const startScreenSurface = canvas.loadSurface("images/start.png");
 const startScreenTexture = canvas.createTextureFromSurface(startScreenSurface);
 
-const birdTextures = [birdTextureUpflap, birdTextureMidflap, birdTextureDownflap];
+const BgScreenSurface = canvas.loadSurface("images/background.png");
+const BgScreenTexture = canvas.createTextureFromSurface(BgScreenSurface);
+
+const pipeSurfaceUp = canvas.loadSurface("images/pipe-up.png");
+const pipeTextureUp = canvas.createTextureFromSurface(pipeSurfaceUp);
+
+const pipeSurfaceDown = canvas.loadSurface("images/pipe-down.png");
+const pipeTextureDown = canvas.createTextureFromSurface(pipeSurfaceDown);
+
+const birdTextures = [
+  birdTextureUpflap,
+  birdTextureMidflap,
+  birdTextureDownflap,
+];
 let animationCycle = 0; // 0, 1, 2
 
-
+let prevTime = performance.now();
 
 canvas.on("draw", () => {
+  const currTime = performance.now();
+  const deltaTime = currTime - prevTime;
+  prevTime = currTime;
   if (intro) {
-    canvas.clear()
-     canvas.copy(startScreenTexture, { x: 0, y: 0, width: 800, height: 600 }, {
-    x: 0,
-    y: 0,
-    width: 800,
-    height: 600,
+    canvas.clear();
+    canvas.copy(startScreenTexture, { x: 0, y: 0, width: 800, height: 600 }, {
+      x: 0,
+      y: 0,
+      width: 800,
+      height: 600,
     });
     canvas.renderFont(font, "Press Space", {
       blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
-      }, {
+    }, {
       x: Math.floor(x_font) + 300,
       y: Math.floor(y_font) + 470,
       width,
       height,
     });
-      canvas.renderFont(font, "  to start ", {
+    canvas.renderFont(font, "  to start ", {
       blended: { color: { r: 209, g: 27, b: 20, a: 255 } },
-      }, {
+    }, {
       x: Math.floor(x_font) + 290,
       y: Math.floor(y_font) + 520,
       width,
@@ -134,21 +155,31 @@ canvas.on("draw", () => {
     canvas.present();
     return;
   }
-canvas.setDrawColor(255, 255, 90, 255);
- 
+  canvas.setDrawColor(255, 255, 90, 255);
+
   canvas.clear();
- 
+  canvas.copy(BgScreenTexture, { x: 0, y: 0, width: 800, height: 600 }, {
+    x: 0,
+    y: 0,
+    width: 800,
+    height: 600,
+  });
   // canvas.fillRect(playerX, playerY, 50, 50);
   animationCycle += 1;
-  if(animationCycle >= 3) {
+  if (animationCycle >= 3) {
     animationCycle = 0;
   }
-  canvas.copy(birdTextures[animationCycle], { x: 0, y: 0, width: 34, height: 24 }, {
+  canvas.copy(birdTextures[animationCycle], {
+    x: 0,
+    y: 0,
+    width: 34,
+    height: 24,
+  }, {
     x: playerX,
     y: playerY,
     width: 34,
     height: 24,
-  }); 
+  });
   canvas.setDrawColor(181, 14, 26, 255);
   for (let idx = 0; idx < upperPipes.length; idx++) {
     if (
@@ -175,9 +206,10 @@ canvas.setDrawColor(255, 255, 90, 255);
     ) {
       // TODO: Hit (complete)
       gameOver = true;
-      let score_effects = ["game_over.wav", "game_over_2.wav"]
-      canvas.playMusic("./audio/" + score_effects[Math.floor(Math.random() * 2)]);
-    
+      let score_effects = ["game_over.wav", "game_over_2.wav"];
+      canvas.playMusic(
+        "./audio/" + score_effects[Math.floor(Math.random() * 2)],
+      );
     }
     if (
       checkCollision(
@@ -193,29 +225,30 @@ canvas.setDrawColor(255, 255, 90, 255);
     ) {
       // Make Score + 1 when pipe crossed
       score_value += 1;
-      let score_effects = ["scored_1.wav", "scored_2.wav"]
-      canvas.playMusic("./audio/" + score_effects[Math.floor(Math.random() * 2)]);
-
+      let score_effects = ["scored_1.wav", "scored_2.wav"];
+      canvas.playMusic(
+        "./audio/" + score_effects[Math.floor(Math.random() * 2)],
+      );
     }
-
 
     // Debug:
     // canvas.fillRect(playerX + 50 / 2, playerY, 0, 50)
     // canvas.fillRect(upperPipes[idx].x + PIPE_WIDTH / 2, upperPipes[idx].height, 0, 800 - upperPipes[idx].height - lowerPipes[idx].height);
+    
+    // Pipes
+    canvas.copy(pipeTextureDown, { x: 0, y: 0, width: 52, height: 320 }, {
+      x: upperPipes[idx].x,
+      y: UPPER_PIPE_Y,
+      width: PIPE_WIDTH,
+      height: upperPipes[idx].height,
+    });
+    canvas.copy(pipeTextureUp, { x: 0, y: 0, width: 52, height: 320 }, {
+      x: lowerPipes[idx].x,
+      y: LOWER_PIPE_Y_BASE - lowerPipes[idx].height,
+      width: PIPE_WIDTH,
+      height: lowerPipes[idx].height,
+    });
 
-
-    canvas.fillRect(
-      upperPipes[idx].x,
-      UPPER_PIPE_Y,
-      PIPE_WIDTH,
-      upperPipes[idx].height,
-    );
-    canvas.fillRect(
-      lowerPipes[idx].x,
-      LOWER_PIPE_Y_BASE - lowerPipes[idx].height,
-      PIPE_WIDTH,
-      lowerPipes[idx].height,
-    );
     upperPipes[idx].x -= 1;
     lowerPipes[idx].x -= 1;
     if (upperPipes[idx].x <= -PIPE_WIDTH) {
@@ -226,13 +259,13 @@ canvas.setDrawColor(255, 255, 90, 255);
     }
   }
   canvas.renderFont(font, "Score: " + score_value, {
-      blended: { color: { r: 127, g: 201, b: 201, a: 255 } },
-    }, {
-      x: Math.floor(x_font) + 550,
-      y: Math.floor(y_font) + 550,
-      width,
-      height,
-    });  
+    blended: { color: { r: 127, g: 201, b: 201, a: 255 } },
+  }, {
+    x: Math.floor(x_font) + 550,
+    y: Math.floor(y_font) + 550,
+    width,
+    height,
+  });
   if (is_space) {
     playerY -= 2;
     setTimeout(() => is_space = false, 84);
@@ -241,7 +274,7 @@ canvas.setDrawColor(255, 255, 90, 255);
     playerY += gravity;
   }
   if (playerY >= 600 - 50) {
-    playerY = 600 - 50;
+        gameOver = true
   }
 
   canvas.present();
