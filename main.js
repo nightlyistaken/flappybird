@@ -14,7 +14,7 @@ const canvas = new Canvas({
 canvas.setCursor("images/yellowbird-upflap.png");
 
 const gravity = 1;
-
+const fps = 9
 function checkCollision(
   x1,
   y1,
@@ -54,7 +54,7 @@ const UPPER_PIPE_Y = 0;
 const LOWER_PIPE_Y_BASE = 800;
 const PIPE_WIDTH = 52;
 const PIPE_DISTANCE = 320;
-const GAP = 180;
+const GAP = 165;
 
 let x_font = 0, y_font = 0;
 let gameOver = false;
@@ -260,7 +260,7 @@ canvas.on("draw", () => {
   }
 
   canvas.present();
-  Deno.sleepSync(10);
+  Deno.sleepSync(fps);
 });
 
 canvas.on("event", (e) => {
