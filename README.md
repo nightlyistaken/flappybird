@@ -4,7 +4,7 @@ flappybird clone of written in
 [deno_sdl2](https://github.com/littledivy/deno_sdl2)
 
 ## Installation
-
+ 
 ```shell
 $ git clone https://github.com/dhairy-online/flappybird.git
 $ deno compile -A --unstable main.js
