@@ -1,7 +1,7 @@
 import { Canvas } from "https://deno.land/x/sdl2@0.1-alpha.6/src/canvas.ts";
 
 const canvas = new Canvas({
-  title: "Flappy Bird in Deno 🐦",
+  title: "Flappy Bird in Deno 🦕",
   height: 400,
   width: 800,
   centered: true,
@@ -12,6 +12,7 @@ const canvas = new Canvas({
   maximized: false,
 });
 
+// Create a class Entity
 class Entity {
   constructor(x, y, width, height) {
     this.x = x;
@@ -27,7 +28,7 @@ const birdSurfaceGameOver = canvas.loadSurface(
 const birdTextureGameOver = canvas.createTextureFromSurface(
   birdSurfaceGameOver,
 );
-
+// Use class Entity and make class Player
 class Player extends Entity {
   dead = false;
   constructor() {
@@ -94,8 +95,6 @@ class Player extends Entity {
 
 canvas.setCursor("sprites/cursor.png");
 
-const gravity = 1;
-const fps = 9;
 function checkCollision(
   x1,
   y1,
@@ -122,9 +121,10 @@ function getRandomInt(min, max) {
 }
 
 let is_space = false;
-
-// Score value
 let score_value = 0;
+
+const gravity = 1;
+const fps = 9;
 
 const upperPipes = [];
 const lowerPipes = [];
@@ -135,23 +135,8 @@ const PIPE_WIDTH = 52;
 const PIPE_DISTANCE = 100;
 const GAP = 130;
 
-let gameOver = false;
-let intro = true;
-
-for (let i = 1; i < 6; i++) {
-  const height = getRandomInt(100, 300);
-  const distance = (i == 1) ? 0 : PIPE_DISTANCE;
-  upperPipes.push({ x: 400 + (PIPE_WIDTH * i) + (distance * i), height });
-
-  // Screen width - Corresponding upper pipe height - Random Gap
-  lowerPipes.push({
-    x: 400 + (PIPE_WIDTH * i) + (distance * i),
-    height: 800 - height - GAP,
-  });
-}
-
-const BgScreenSurface = canvas.loadSurface("sprites/background.png");
-const BgScreenTexture = canvas.createTextureFromSurface(BgScreenSurface);
+const bgScreenSurface = canvas.loadSurface("sprites/background.png");
+const bgScreenTexture = canvas.createTextureFromSurface(bgScreenSurface);
 
 const startSurface = canvas.loadSurface("sprites/start.png");
 const startTexture = canvas.createTextureFromSurface(startSurface);
@@ -164,9 +149,24 @@ const pipeTextureDown = canvas.createTextureFromSurface(pipeSurfaceDown);
 
 const bird = new Player();
 
+let gameOver = false;
+let intro = true;
+
+
+for (let i = 1; i < 6; i++) {
+  const height = getRandomInt(100, 300);
+  const distance = (i == 1) ? 0 : PIPE_DISTANCE;
+  upperPipes.push({ x: 400 + (PIPE_WIDTH * i) + (distance * i), height });
+
+  // Screen width - Corresponding upper pipe height - Random Gap
+  lowerPipes.push({
+    x: 400 + (PIPE_WIDTH * i) + (distance * i),
+    height: 800 - height - GAP,
+  });
+}
 canvas.clear();
 
-canvas.copy(BgScreenTexture, { x: 0, y: 0, width: 400, height: 800 }, {
+canvas.copy(bgScreenTexture, { x: 0, y: 0, width: 400, height: 800 }, {
   x: 0,
   y: 0,
   width: 400,
@@ -188,7 +188,7 @@ for await (const event of canvas) {
         break;
       }
 
-      canvas.copy(BgScreenTexture, { x: 0, y: 0, width: 400, height: 800 }, {
+      canvas.copy(bgScreenTexture, { x: 0, y: 0, width: 400, height: 800 }, {
         x: 0,
         y: 0,
         width: 400,
