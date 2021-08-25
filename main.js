@@ -135,10 +135,8 @@ const PIPE_WIDTH = 52;
 const PIPE_DISTANCE = 100;
 const GAP = 130;
 
-let x_font = 0, y_font = 0;
 let gameOver = false;
 let intro = true;
-let retry = false;
 
 for (let i = 1; i < 6; i++) {
   const height = getRandomInt(100, 300);
@@ -154,6 +152,9 @@ for (let i = 1; i < 6; i++) {
 
 const BgScreenSurface = canvas.loadSurface("sprites/background.png");
 const BgScreenTexture = canvas.createTextureFromSurface(BgScreenSurface);
+
+const startSurface = canvas.loadSurface("sprites/start.png");
+const startTexture = canvas.createTextureFromSurface(startSurface);
 
 const pipeSurfaceUp = canvas.loadSurface("sprites/pipe-up.png");
 const pipeTextureUp = canvas.createTextureFromSurface(pipeSurfaceUp);
@@ -220,7 +221,7 @@ canvas.on("draw", () => {
       )
     ) {
       score_value += 1;
-      let score_effects = ["scored_1.wav", "scored_2.wav"];
+      const score_effects = ["scored_1.wav", "scored_2.wav"];
       canvas.playMusic(
         "./audio/" + score_effects[Math.floor(Math.random() * 2)],
       );
@@ -250,7 +251,7 @@ canvas.on("draw", () => {
       lowerPipes[idx].x -= 1;
       if (upperPipes[idx].x <= -PIPE_WIDTH) {
         upperPipes[idx].x = 800 + PIPE_WIDTH;
-        upperPipes[idx].height = getRandomInt(100, 200);
+        upperPipes[idx].height = getRandomInt(100, 190);
         lowerPipes[idx].x = 800 + PIPE_WIDTH;
         lowerPipes[idx].height = 800 - upperPipes[idx].height - GAP;
       }
@@ -320,27 +321,11 @@ canvas.copy(BgScreenTexture, { x: 0, y: 0, width: 400, height: 800 }, {
   width: 400,
   height: 800,
 });
-
-const height = Math.floor(170 / 3) - 25;
-
-canvas.renderFont(font, "flappybird!", {
-  blended: { color: { r: 255, g: 255, b: 255, a: 255 } },
-}, {
-  x: (400 / 2) - 130,
-  y: (800 / 2) - (2 * height),
-  width: Math.floor(770 / 5),
-  height,
-});
-
-const width = Math.floor(770 / 3);
-
-canvas.renderFont(font, "Press Space to start", {
-  blended: { color: { r: 255, g: 255, b: 255, a: 255 } },
-}, {
-  x: (400 / 2) - 130,
-  y: (800 / 2) - height,
-  width,
-  height,
+canvas.copy(startTexture, { x: 0, y: 0, width: 400, height: 800 }, {
+  x: 100,
+  y: 230,
+  width: 210,
+  height: 300,
 });
 
 canvas.present();
