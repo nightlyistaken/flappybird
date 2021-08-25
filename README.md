@@ -7,8 +7,8 @@ flappybird clone of written in
  
 ```shell
 $ git clone https://github.com/dhairy-online/flappybird.git
+$ cd flappybird/
 $ deno compile -A --unstable main.js
-
 $ ./flappybird
 ```
 
