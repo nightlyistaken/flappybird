@@ -21,19 +21,31 @@ class Entity {
   }
 }
 
-const birdSurfaceGameOver = canvas.loadSurface("images/yellowbird-gameover.png");
-const birdTextureGameOver = canvas.createTextureFromSurface(birdSurfaceGameOver);
+const birdSurfaceGameOver = canvas.loadSurface(
+  "images/yellowbird-gameover.png",
+);
+const birdTextureGameOver = canvas.createTextureFromSurface(
+  birdSurfaceGameOver,
+);
 
 class Player extends Entity {
   dead = false;
   constructor() {
     super(170, 100, 34, 24);
 
-    const birdSurfaceMidflap = canvas.loadSurface("images/yellowbird-midflap.png");
-    const birdTextureMidflap = canvas.createTextureFromSurface(birdSurfaceMidflap);
-    
-    const birdSurfaceUpflap = canvas.loadSurface("images/yellowbird-upflap.png");
-    const birdTextureUpflap = canvas.createTextureFromSurface(birdSurfaceUpflap);
+    const birdSurfaceMidflap = canvas.loadSurface(
+      "images/yellowbird-midflap.png",
+    );
+    const birdTextureMidflap = canvas.createTextureFromSurface(
+      birdSurfaceMidflap,
+    );
+
+    const birdSurfaceUpflap = canvas.loadSurface(
+      "images/yellowbird-upflap.png",
+    );
+    const birdTextureUpflap = canvas.createTextureFromSurface(
+      birdSurfaceUpflap,
+    );
 
     const birdSurfaceDownflap = canvas.loadSurface(
       "images/yellowbird-downflap.png",
@@ -52,7 +64,9 @@ class Player extends Entity {
   }
 
   render() {
-    const texture = this.dead ? birdTextureGameOver : this.textures[this.animationCycle];
+    const texture = this.dead
+      ? birdTextureGameOver
+      : this.textures[this.animationCycle];
     canvas.copy(texture, {
       x: 0,
       y: 0,
@@ -74,13 +88,14 @@ class Player extends Entity {
 
   die() {
     this.dead = true;
+    this.y += 1;
   }
 }
 
 canvas.setCursor("images/cursor.png");
 
 const gravity = 1;
-const fps = 9
+const fps = 9;
 function checkCollision(
   x1,
   y1,
@@ -125,11 +140,11 @@ let gameOver = false;
 let intro = true;
 let retry = false;
 
-for(let i = 1; i < 6; i++) {
+for (let i = 1; i < 6; i++) {
   const height = getRandomInt(100, 300);
   const distance = (i == 1) ? 0 : PIPE_DISTANCE;
   upperPipes.push({ x: 400 + (PIPE_WIDTH * i) + (distance * i), height });
-  
+
   // Screen width - Corresponding upper pipe height - Random Gap
   lowerPipes.push({
     x: 400 + (PIPE_WIDTH * i) + (distance * i),
@@ -252,7 +267,7 @@ canvas.on("draw", () => {
       bird.render();
     }
   }
-    
+
   canvas.renderFont(font, score_value.toString(), {
     blended: { color: { r: 255, g: 255, b: 255, a: 255 } },
   }, {
@@ -327,8 +342,6 @@ canvas.renderFont(font, "Press Space to start", {
   width,
   height,
 });
-
-
 
 canvas.present();
 
