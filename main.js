@@ -22,7 +22,7 @@ class Entity {
 }
 
 const birdSurfaceGameOver = canvas.loadSurface(
-  "images/yellowbird-gameover.png",
+  "sprites/yellowbird-gameover.png",
 );
 const birdTextureGameOver = canvas.createTextureFromSurface(
   birdSurfaceGameOver,
@@ -34,21 +34,21 @@ class Player extends Entity {
     super(170, 100, 34, 24);
 
     const birdSurfaceMidflap = canvas.loadSurface(
-      "images/yellowbird-midflap.png",
+      "sprites/yellowbird-midflap.png",
     );
     const birdTextureMidflap = canvas.createTextureFromSurface(
       birdSurfaceMidflap,
     );
 
     const birdSurfaceUpflap = canvas.loadSurface(
-      "images/yellowbird-upflap.png",
+      "sprites/yellowbird-upflap.png",
     );
     const birdTextureUpflap = canvas.createTextureFromSurface(
       birdSurfaceUpflap,
     );
 
     const birdSurfaceDownflap = canvas.loadSurface(
-      "images/yellowbird-downflap.png",
+      "sprites/yellowbird-downflap.png",
     );
     const birdTextureDownflap = canvas.createTextureFromSurface(
       birdSurfaceDownflap,
@@ -92,7 +92,7 @@ class Player extends Entity {
   }
 }
 
-canvas.setCursor("images/cursor.png");
+canvas.setCursor("sprites/cursor.png");
 
 const gravity = 1;
 const fps = 9;
@@ -152,13 +152,13 @@ for (let i = 1; i < 6; i++) {
   });
 }
 
-const BgScreenSurface = canvas.loadSurface("images/background.png");
+const BgScreenSurface = canvas.loadSurface("sprites/background.png");
 const BgScreenTexture = canvas.createTextureFromSurface(BgScreenSurface);
 
-const pipeSurfaceUp = canvas.loadSurface("images/pipe-up.png");
+const pipeSurfaceUp = canvas.loadSurface("sprites/pipe-up.png");
 const pipeTextureUp = canvas.createTextureFromSurface(pipeSurfaceUp);
 
-const pipeSurfaceDown = canvas.loadSurface("images/pipe-down.png");
+const pipeSurfaceDown = canvas.loadSurface("sprites/pipe-down.png");
 const pipeTextureDown = canvas.createTextureFromSurface(pipeSurfaceDown);
 
 const bird = new Player();
